@@ -344,11 +344,21 @@ with st.expander("🎯 실시간 데이터 필터 옵션 설정", expanded=True)
             format="%d명",
             help="설정 수치 이상의 실시간 동접자를 보유한 게임만 필터링합니다."
         )
+        max_rank = st.slider(
+            "🏆 최소 순위 수",
+            min_value=1,
+            max_value=int(df["Rank"].max()) if not df.empty else 20,
+            value=int(df["Rank"].max()) if not df.empty else 20,
+            step=1,
+            format="%d위",
+            help="설정한 순위 이내의 게임만 필터링합니다. (예: 10위로 설정 시 1~10위만 표시)"
+        )
 
 # Apply filters
 filtered_df = df[
     (df["Genre"].isin(selected_genres)) &
-    (df["Active Players"] >= min_players)
+    (df["Active Players"] >= min_players) &
+    (df["Rank"] <= max_rank)
 ]
 
 # Populate Metrics Container
