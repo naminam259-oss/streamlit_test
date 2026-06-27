@@ -739,11 +739,24 @@ else:
                             <b>👍 추천율:</b> {selected_row['Approval Rate']:.1f}%
                         </div>
                     </div>
-                    <b>🔗 전체 URL 복사 (아래 박스 우측 상단 복사 아이콘 클릭):</b>
+                    <b>🔗 전체 URL (박스를 클릭하면 로블록스 공식 홈페이지로 이동합니다):</b>
+                    <a href="{clean_url}" target="_blank" style="text-decoration: none; display: block; margin-top: 8px;">
+                        <div style="
+                            background-color: #0e1117;
+                            border: 1px solid rgba(168, 85, 247, 0.4);
+                            border-radius: 6px;
+                            padding: 12px 16px;
+                            font-family: monospace;
+                            font-size: 0.95rem;
+                            color: #60a5fa;
+                            cursor: pointer;
+                            transition: background-color 0.2s;
+                            word-break: break-all;
+                        " onmouseover="this.style.backgroundColor='rgba(168, 85, 247, 0.1)'" onmouseout="this.style.backgroundColor='#0e1117'">
+                            {clean_url}
+                        </div>
+                    </a>
                 """, unsafe_allow_html=True)
-                
-                st.code(clean_url, language="text")
-                st.markdown(f"[🎮 로블록스 공식 홈페이지로 이동하기]({clean_url})")
         else:
             st.info("💡 위의 테이블에서 특정 게임 행을 선택하시면 해당 게임의 상세한 URL 정보 확인 및 복사 기능을 사용할 수 있습니다.")
 
