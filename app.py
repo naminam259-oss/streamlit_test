@@ -190,7 +190,7 @@ MOCK_GAMES_BASE = [
 ]
 
 def make_game_url(game_url, game_name):
-    """Constructs a working Roblox URL containing a truncated display slug as a query parameter."""
+    """Constructs a working Roblox URL containing a display slug as a query parameter."""
     if "games/" in game_url:
         try:
             parts = game_url.split("games/")[1].split("/")
@@ -201,12 +201,18 @@ def make_game_url(game_url, game_name):
                 if char.isalnum() or char == " ":
                     slug += char
             slug = slug.strip().replace(" ", "-")
-            truncated_slug = slug[:10]
-            display_url = f"https://www.roblox.com/games/{place_id}/{truncated_slug}..."
+            
+            # Truncate slug if it exceeds 25 characters and append '...'
+            if len(slug) > 25:
+                display_slug = slug[:22] + "..."
+            else:
+                display_slug = slug
+                
+            display_url = f"https://www.roblox.com/games/{place_id}/{display_slug}"
         except Exception:
-            display_url = f"{game_url}..."
+            display_url = game_url
     else:
-        display_url = f"{game_url}..."
+        display_url = game_url
         
     if "?" in game_url:
         return f"{game_url}&display={display_url}"
@@ -269,7 +275,7 @@ def generate_mock_data():
 
 @st.cache_data(ttl=600)
 def fetch_roblox_live_data():
-    """Fetches real-time popular Roblox games using explore-api, falling back to mock data on failure."""
+    """Fetches real-time popular Roblox games (Cache reset to apply option 2)."""
     session_id = str(uuid.uuid4())
     url = "https://apis.roblox.com/explore-api/v1/get-sort-content"
     params = {
@@ -686,7 +692,7 @@ else:
                 "Peak Players": st.column_config.NumberColumn("역대 최고 동접자 수", format="%d명"),
                 "Approval Rate": st.column_config.NumberColumn("추천율", format="%.1f%%"),
                 "Created Date": "게임 생성일",
-                "Game URL": st.column_config.LinkColumn("게임 링크", display_text=r"display=(.*)$", width="large")
+                "Game URL": st.column_config.LinkColumn("게임 링크", display_text=r"display=(.*)$", width=300)
             },
             column_order=["Rank", "Game Name", "Genre", "Creator", "Active Players", "Peak Players", "Approval Rate", "Created Date", "Game URL"],
             hide_index=True,
@@ -704,19 +710,21 @@ else:
             
             st.markdown("""
                 <style>
-                    .detail-box {
-                        background: rgba(30, 30, 45, 0.8);
-                        border-radius: 12px;
-                        border: 1px solid rgba(168, 85, 247, 0.4);
-                        padding: 1.5rem;
-                        margin-top: 1.5rem;
-                        box-shadow: 0 4px 20px rgba(103, 58, 183, 0.15);
+                    div[data-testid="stTabContent"] div[data-testid="stVerticalBlockBorderWrapper"] {
+                        background: rgba(30, 30, 45, 0.8) !important;
+                        border-radius: 12px !important;
+                        border: 1px solid rgba(168, 85, 247, 0.4) !important;
+                        padding: 1.5rem !important;
+                        margin-top: 1.5rem !important;
+                        box-shadow: 0 4px 20px rgba(103, 58, 183, 0.15) !important;
                     }
                 </style>
             """, unsafe_allow_html=True)
             
-            st.markdown(f"""
-                <div class="detail-box">
+            clean_url = selected_row['Game URL'].split("?display=")[0].split("&display=")[0]
+            
+            with st.container(border=True):
+                st.markdown(f"""
                     <h3 style="margin-top: 0; color: #c084fc;">🔍 {selected_row['Game Name']} 상세 정보</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
                         <div>
@@ -732,13 +740,10 @@ else:
                         </div>
                     </div>
                     <b>🔗 전체 URL 복사 (아래 박스 우측 상단 복사 아이콘 클릭):</b>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            # Show copyable URL code box
-            clean_url = selected_row['Game URL'].split("?display=")[0].split("&display=")[0]
-            st.code(clean_url, language="text")
-            st.markdown(f"[🎮 로블록스 공식 홈페이지로 이동하기]({clean_url})")
+                """, unsafe_allow_html=True)
+                
+                st.code(clean_url, language="text")
+                st.markdown(f"[🎮 로블록스 공식 홈페이지로 이동하기]({clean_url})")
         else:
             st.info("💡 위의 테이블에서 특정 게임 행을 선택하시면 해당 게임의 상세한 URL 정보 확인 및 복사 기능을 사용할 수 있습니다.")
 
